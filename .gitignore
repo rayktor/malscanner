@@ -1,0 +1,8 @@
+.localstack
+node_modules
+.eslintcache
+.DS_Store
+.env
+build
+builds
+yarn-error.log
