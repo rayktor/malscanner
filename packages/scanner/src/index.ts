@@ -1,16 +1,15 @@
 
 import NodeClam from 'clamscan';
-import { S3Event, Context } from 'aws-lambda';
 import { Handler } from 'aws-lambda';
 import { promises as fileSystem } from 'fs';
 import { deleteS3Object, getS3ObjectBuffer, setS3ObjectTags } from './s3';
-import { payloadSchema } from './schema';
+import { payloadSchema, S3EventPayload } from './schema';
 
 let clamscan: NodeClam | undefined = undefined;
 
 const fileToScan = '/tmp/to-scan';
 
-export const handler: Handler = async ( event: S3Event) => {
+export const handler: Handler = async ( event: S3EventPayload) => {
 
 	const payload = payloadSchema.parse(event);
 	

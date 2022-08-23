@@ -6,3 +6,4 @@ node_modules
 build
 builds
 yarn-error.log
+.vscode

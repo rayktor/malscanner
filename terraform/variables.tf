@@ -2,7 +2,7 @@ variable "project_code" {}
 variable "target_env" {}
 
 variable "function_memory_mb" {
-  default = "2048"
+  default = "1638"
 }
 
 variable "region" {

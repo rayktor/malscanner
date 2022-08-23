@@ -25,3 +25,5 @@ const recordSchema = z.object({
 export const payloadSchema = z.object({
   Records: z.array(recordSchema)
 });
+
+export type S3EventPayload = z.infer<typeof payloadSchema>;
