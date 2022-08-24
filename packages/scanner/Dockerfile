@@ -9,10 +9,9 @@ RUN yum update -y && \
     amazon-linux-extras install -y epel && \
     yum clean all
 
-RUN yum install -y zip clamav clamav-freshclam
+RUN yum install -y clamav clamav-freshclam
 
-RUN cp /etc/freshclam.conf /etc/freshclam.conf.bak && \
-  sed -i '/^Example/d' /etc/freshclam.conf
+RUN sed -i '/^Example/d' /etc/freshclam.conf
 
 RUN freshclam -v
 
