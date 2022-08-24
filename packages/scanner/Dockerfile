@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM --platform=linux/amd64 public.ecr.aws/lambda/nodejs:16 as clamav
+FROM public.ecr.aws/lambda/nodejs:16 as clamav
 
 ARG PORT=8000
 ENV PORT=$PORT
@@ -16,7 +16,7 @@ RUN cp /etc/freshclam.conf /etc/freshclam.conf.bak && \
 
 RUN freshclam -v
 
-FROM --platform=linux/amd64 clamav
+FROM clamav
 
 RUN corepack enable
 
