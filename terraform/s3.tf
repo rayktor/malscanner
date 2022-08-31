@@ -1,34 +1,7 @@
 
-resource "aws_s3_bucket" "bucket_logs" {
-  bucket = "${local.namespace}-bucket-logs"
-  acl    = "log-delivery-write"
-}
-
 resource "aws_s3_bucket" "uploads" {
   bucket = "${local.namespace}-uploads"
   acl    = "private"
-
-  cors_rule {
-    allowed_headers = ["*"]
-    allowed_methods = ["PUT", "POST"]
-    allowed_origins = ["*"]
-  }
-
-  logging {
-    target_bucket = aws_s3_bucket.bucket_logs.id
-    target_prefix = "${local.namespace}-uploads/"
-  }
-
-  versioning {
-    enabled = false
-  }
-
-  lifecycle_rule {
-    enabled = true
-    expiration {
-      days = 14
-    }
-  }
 }
 
 resource "aws_s3_bucket_policy" "uploads" {

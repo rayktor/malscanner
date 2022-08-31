@@ -1,38 +1,39 @@
-
+import fs from 'fs';
+import {payloadSchema, S3EventPayload } from './schema';
 import NodeClam from 'clamscan';
-import { Handler } from 'aws-lambda';
-import { promises as fileSystem } from 'fs';
-import { deleteS3Object, getS3ObjectBuffer, setS3ObjectTags } from './s3';
-import { payloadSchema, S3EventPayload } from './schema';
+import { getS3ObjectBuffer, setS3ObjectTags, deleteS3Object } from './s3'
 
-let clamscan: NodeClam | undefined = undefined;
+export const handler = async (event: S3EventPayload) => {
 
-const fileToScan = '/tmp/to-scan';
+  const { Records: records } = payloadSchema.parse(event);
 
-export const handler: Handler = async ( event: S3EventPayload) => {
+  const clamscan = await new NodeClam().init({
+    debugMode: true,
+    preference: 'clamscan',
+  });
 
-	const payload = payloadSchema.parse(event);
-	
-	const { object } = payload.Records[0].s3;
+  await Promise.all(records?.map(async (r) => {
 
-	if (!(clamscan instanceof NodeClam)) {
-		clamscan = await new NodeClam().init({
-			debugMode: true,
-			preference: 'clamscan'
-		});
-	}
+    const { key } = r.s3.object;
 
-	const data = await getS3ObjectBuffer(object.key);
-	const fs = await fileSystem.open(fileToScan, 'w');
-	await fs.write<Buffer>(data as Buffer);
-	await fs.close();
+    const data = await getS3ObjectBuffer(key);
 
-	const { isInfected, viruses } = await clamscan.isInfected(fileToScan);
-	console.log({ key: object.key, isInfected, viruses });
+    const fileToScan = `/tmp/${key}`;
 
-	if (isInfected) {
-		await deleteS3Object(object.key);
-	} else {
-		await setS3ObjectTags(object.key, [{ Key: 'scanned', Value: 'true' }])
-	}
+    const fd = fs.openSync(fileToScan, 'w');
+    fs.writeSync(fd, data);
+    fs.close(fd);
+
+    const { isInfected, viruses }  = await clamscan.isInfected(fileToScan);
+    
+    console.log({ file: key, isInfected, viruses });
+
+    if (isInfected) {
+      await deleteS3Object(key);
+    } else {
+      await setS3ObjectTags(key, [ { Key: 'scanned', Value: 'true' } ]);
+    }
+
+  }));
+ 
 }

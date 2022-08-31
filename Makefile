@@ -8,8 +8,7 @@ TERRAFORM_DIR = terraform
 export AWS_REGION ?= us-east-1
 
 ifeq ($(ENV_NAME), dev)
-AWS_ACCOUNT_ID = 108904982560
-#537290762732
+AWS_ACCOUNT_ID = #123456789
 AWS_PROFILE = personal
 endif
 
@@ -32,10 +31,6 @@ build-local:
 	@echo "+\n++ Make: Running locally ...\n+"
 	@docker compose build --no-cache
 
-run-local-api:
-	@echo "+\n++ Make: Running locally ...\n+"
-	@docker compose up api
-
 close-local:
 	@echo "+\n++ Make: Closing local container ...\n+"
 	@docker compose down
@@ -45,6 +40,7 @@ local-api-workspace:
 
 build-scanner:
 	@echo "+\n++ Make: Build image...\n+"
+	rm -rf packages/scanner/node_modules || true
 	@docker compose build malscanner
 
 scanner-run:
@@ -77,7 +73,7 @@ tf-deploy:
 
 tf-plan: tf-init
 	# Creating all AWS infrastructure.
-	@aws-vault exec $(AWS_PROFILE) --no-session -- terraform -chdir=$(TERRAFORM_DIR) plan --out plan
+	@aws-vault exec $(AWS_PROFILE) --no-session -- terraform -chdir=$(TERRAFORM_DIR) plan
 
 tf-force-unlock: tf-init
 	@aws-vault exec $(AWS_PROFILE) -- terraform -chdir=$(TERRAFORM_DIR) force-unlock $(LOCK_ID)
@@ -85,7 +81,9 @@ tf-force-unlock: tf-init
 tag-scanner-image:
 	docker tag $(PROJECT)-malscanner $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(NAMESPACE)-malscanner
 
-push-scanner-image:
+new-malscanner-image: build-scanner | tag-scanner-image | push-scanner-image
+
+push-scanner-build:
 	@aws-vault exec $(AWS_PROFILE) -- docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(NAMESPACE)-malscanner
 
 ecr-login:

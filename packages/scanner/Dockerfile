@@ -20,10 +20,15 @@ FROM clamav
 RUN corepack enable
 
 WORKDIR ${LAMBDA_TASK_ROOT}/src
+
 COPY . .
+
 RUN yarn && yarn build && mv build ${LAMBDA_TASK_ROOT}
+
 RUN yarn install --production=true --modules-folder ${LAMBDA_TASK_ROOT}/build/node_modules
+
 WORKDIR ${LAMBDA_TASK_ROOT}/build
+
 RUN rm -rf ${LAMBDA_TASK_ROOT}/src
 
 CMD [ "build/index.handler" ]

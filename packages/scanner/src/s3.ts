@@ -34,24 +34,19 @@ const s3 = S3Service(setupAWS);
  * @param key Object key
  * @returns Object body as Buffer
  */
-export const getS3ObjectBuffer = async (key: string): Promise<S3.Body | undefined> => {
+export const getS3ObjectBuffer = async (key: string): Promise<Buffer> => {
 
   const params = {
     Bucket: env.AWS_S3_BUCKET,
     Key: key,
   } as S3.GetObjectRequest;
 
-  try {
-    const {
-      Body,
-      ContentType: contentType,
-      ContentLength: length,
-    } = await s3.getObject(params).promise();
+  const { Body: body } = await s3.getObject(params).promise();
 
-    return Body;
-  } catch (error) {
-    console.error(error);
-  }
+  if (body === undefined) throw new Error( `Empty object ${key}!`);
+
+  return body as Buffer;
+
 };
 
 /**
@@ -81,13 +76,13 @@ export const deleteS3Object = async (key: string): Promise<void> => {
  * @param options set action type or set expiry for the url
  * @returns signed url as string
  */
-export const getSignedUrl = async ({key, expiry, type}: SignedUrlOptions) => {
+export const getSignedUrl = async ({key, expiry, type}: SignedUrlOptions): Promise<string> => {
   const params = {
     Bucket: env.AWS_S3_BUCKET,
     Key: key,
     Expires: expiry,
   };
-  return s3.getSignedUrlPromise(type, params);
+  return await s3.getSignedUrlPromise(type, params);
 }
 
 /**
@@ -96,7 +91,7 @@ export const getSignedUrl = async ({key, expiry, type}: SignedUrlOptions) => {
  * @param key object key
  * @returns {boolean} if object is scanned and no malware is found.
  */
-export const isScanned = async (key: string) => {
+export const isScanned = async (key: string): Promise<boolean> => {
   const params: S3.GetObjectTaggingRequest = {
     Bucket: env.AWS_S3_BUCKET,
     Key: key,
