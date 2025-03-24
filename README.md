@@ -1,12 +1,19 @@
 # Malware Scanning (Severless)
+The Node.js application is deployed on AWS Lambda, which scans objects (files) uploaded to the S3 bucket for malware.
 
-## Running locally
+## High-level application flow
+1. An object (file) is uploaded to an S3 bucket.
+2. When the object is uploaded, it triggers an AWS Lambda function (the Node.js application).
+3. The Lambda function runs and scans the object for malware using a virus scanning library or API.
+4. If malware is detected, the function can take further actions, such as deleting the object from the bucket.
 
-### Checkout repo
+## Checkout repo
 ```sh
 git clone https://github.com/rayktor/malscanner.git
 cd malscanner
 ```
+
+## Running locally
 
 ### Prerequisites
 - aws-cli
