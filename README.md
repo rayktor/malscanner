@@ -2,6 +2,12 @@
 
 ## Running locally
 
+### Checkout repo
+```sh
+git clone https://github.com/rayktor/malscanner.git
+cd malscanner
+```
+
 ### Prerequisites
 - aws-cli
 - Docker
